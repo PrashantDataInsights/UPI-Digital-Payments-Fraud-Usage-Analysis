@@ -1,0 +1,279 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.db { background: #1a1f2e; border-radius: 12px; padding: 0; overflow: hidden; }
+.topbar { background: #111827; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #2d3748; }
+.topbar-title { color: #e2e8f0; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.topbar-filters { display: flex; gap: 8px; }
+.filter-pill { background: #2d3748; color: #94a3b8; font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 1px solid #3d4f63; }
+.filter-pill.active { background: #1e3a5f; color: #60a5fa; border-color: #3b82f6; }
+.content { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.kpi { background: #111827; border-radius: 10px; padding: 14px 16px; border: 1px solid #2d3748; }
+.kpi-label { font-size: 11px; color: #64748b; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi-value { font-size: 22px; font-weight: 500; }
+.kpi-sub { font-size: 11px; margin-top: 4px; }
+.up { color: #f87171; }
+.down { color: #34d399; }
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.charts-row-3 { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 12px; }
+.card { background: #111827; border-radius: 10px; padding: 14px 16px; border: 1px solid #2d3748; }
+.card-title { font-size: 12px; color: #94a3b8; margin-bottom: 12px; font-weight: 500; }
+.bar-wrap { display: flex; flex-direction: column; gap: 7px; }
+.bar-row { display: flex; align-items: center; gap: 8px; }
+.bar-label { font-size: 11px; color: #94a3b8; width: 80px; flex-shrink: 0; text-align: right; }
+.bar-track { flex: 1; background: #1e2d40; border-radius: 3px; height: 14px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; display: flex; align-items: center; padding-left: 6px; }
+.bar-val { font-size: 10px; font-weight: 500; }
+.donut-wrap { display: flex; align-items: center; justify-content: center; gap: 20px; }
+.legend { display: flex; flex-direction: column; gap: 8px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #94a3b8; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.legend-val { font-weight: 500; color: #e2e8f0; margin-left: 2px; }
+.line-wrap { position: relative; height: 90px; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 11px; }
+.tbl th { color: #64748b; font-weight: 500; padding: 4px 8px; border-bottom: 1px solid #2d3748; text-align: left; }
+.tbl td { color: #cbd5e1; padding: 5px 8px; border-bottom: 1px solid #1e2d40; }
+.badge { padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 500; }
+.badge-red { background: #4c1d1d; color: #f87171; }
+.badge-green { background: #14291a; color: #34d399; }
+.badge-amber { background: #2d1f0a; color: #fbbf24; }
+</style>
+
+<div class="db">
+  <div class="topbar">
+    <div class="topbar-title">
+      <i class="ti ti-shield-check" style="color:#60a5fa;font-size:16px" aria-hidden="true"></i>
+      <span>UPI Fraud Analysis Dashboard</span>
+      <span style="color:#475569;font-size:12px">— Jan 2024 to Dec 2024</span>
+    </div>
+    <div class="topbar-filters">
+      <span class="filter-pill active">All Banks</span>
+      <span class="filter-pill active">All States</span>
+      <span class="filter-pill">Q1</span>
+      <span class="filter-pill">Q2</span>
+      <span class="filter-pill">Q3</span>
+      <span class="filter-pill">Q4</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">Total transactions</div>
+        <div class="kpi-value" style="color:#60a5fa">5,000</div>
+        <div class="kpi-sub" style="color:#94a3b8">Jan – Dec 2024</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Fraud cases</div>
+        <div class="kpi-value" style="color:#f87171">384</div>
+        <div class="kpi-sub up"><i class="ti ti-arrow-up" style="font-size:10px" aria-hidden="true"></i> 7.68% fraud rate</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Fraud amount</div>
+        <div class="kpi-value" style="color:#fbbf24">₹4.49Cr</div>
+        <div class="kpi-sub up">34.3% of total amount</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Avg fraud amount</div>
+        <div class="kpi-value" style="color:#a78bfa">₹1.17L</div>
+        <div class="kpi-sub down">vs ₹18.6K legit avg</div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+
+      <div class="card">
+        <div class="card-title"><i class="ti ti-chart-bar" style="font-size:13px;margin-right:4px" aria-hidden="true"></i>Fraud by type</div>
+        <div class="bar-wrap">
+          <div class="bar-row">
+            <span class="bar-label">Fake UPI link</span>
+            <div class="bar-track"><div class="bar-fill" style="width:82%;background:#f87171"><span class="bar-val" style="color:#7f1d1d">63</span></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">SIM swap</span>
+            <div class="bar-track"><div class="bar-fill" style="width:82%;background:#fb923c"><span class="bar-val" style="color:#7c2d12">63</span></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Acct takeover</span>
+            <div class="bar-track"><div class="bar-fill" style="width:79%;background:#fbbf24"><span class="bar-val" style="color:#78350f">61</span></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">OTP fraud</span>
+            <div class="bar-track"><div class="bar-fill" style="width:74%;background:#a78bfa"><span class="bar-val" style="color:#3b0764">57</span></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Phishing</span>
+            <div class="bar-track"><div class="bar-fill" style="width:64%;background:#60a5fa"><span class="bar-val" style="color:#1e3a5f">49</span></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Vishing</span>
+            <div class="bar-track"><div class="bar-fill" style="width:53%;background:#34d399"><span class="bar-val" style="color:#064e3b">41</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="ti ti-chart-donut" style="font-size:13px;margin-right:4px" aria-hidden="true"></i>Fraud vs legitimate</div>
+        <div class="donut-wrap">
+          <svg width="110" height="110" viewBox="0 0 110 110">
+            <circle cx="55" cy="55" r="40" fill="none" stroke="#1e2d40" stroke-width="18"/>
+            <circle cx="55" cy="55" r="40" fill="none" stroke="#f87171" stroke-width="18"
+              stroke-dasharray="50 201" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 55 55)"/>
+            <circle cx="55" cy="55" r="40" fill="none" stroke="#34d399" stroke-width="18"
+              stroke-dasharray="151 100" stroke-dashoffset="-50" stroke-linecap="round" transform="rotate(-90 55 55)"/>
+            <text x="55" y="51" text-anchor="middle" fill="#e2e8f0" font-size="14" font-weight="500">7.68%</text>
+            <text x="55" y="64" text-anchor="middle" fill="#64748b" font-size="10">fraud</text>
+          </svg>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div>Fraud <span class="legend-val">384</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:#34d399"></div>Legitimate <span class="legend-val">4,616</span></div>
+            <div style="margin-top:6px;font-size:11px;color:#64748b">Peak hour: 10 PM</div>
+            <div style="font-size:11px;color:#64748b">Cross-state: 2× risk</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="charts-row-3">
+
+      <div class="card">
+        <div class="card-title"><i class="ti ti-chart-line" style="font-size:13px;margin-right:4px" aria-hidden="true"></i>Monthly fraud trend</div>
+        <svg width="100%" height="100" viewBox="0 0 300 100" preserveAspectRatio="none">
+          <polyline fill="none" stroke="#f87171" stroke-width="1.5" stroke-linejoin="round"
+            points="10,72 35,65 60,58 85,70 110,52 135,48 160,62 185,55 210,40 235,45 260,35 290,42"/>
+          <polyline fill="none" stroke="#60a5fa" stroke-width="1" stroke-linejoin="round" stroke-dasharray="3 2"
+            points="10,80 35,75 60,70 85,78 110,65 135,60 160,72 185,66 210,54 235,58 260,50 290,55"/>
+          <text x="10" y="95" fill="#64748b" font-size="8">Jan</text>
+          <text x="80" y="95" fill="#64748b" font-size="8">Apr</text>
+          <text x="150" y="95" fill="#64748b" font-size="8">Jul</text>
+          <text x="220" y="95" fill="#64748b" font-size="8">Oct</text>
+          <text x="278" y="95" fill="#64748b" font-size="8">Dec</text>
+          <circle cx="210" cy="40" r="3" fill="#f87171"/>
+          <text x="215" y="38" fill="#f87171" font-size="8">peak</text>
+        </svg>
+        <div style="display:flex;gap:12px;margin-top:4px">
+          <span style="font-size:10px;color:#f87171"><span style="display:inline-block;width:12px;height:2px;background:#f87171;vertical-align:middle;margin-right:3px"></span>Fraud cases</span>
+          <span style="font-size:10px;color:#60a5fa"><span style="display:inline-block;width:12px;height:2px;background:#60a5fa;vertical-align:middle;margin-right:3px;border-top:1px dashed #60a5fa"></span>Fraud rate %</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="ti ti-building-bank" style="font-size:13px;margin-right:4px" aria-hidden="true"></i>Bank fraud rate %</div>
+        <div class="bar-wrap">
+          <div class="bar-row">
+            <span class="bar-label" style="width:60px">Yes Bank</span>
+            <div class="bar-track"><div class="bar-fill" style="width:90%;background:#f87171"><span class="bar-val" style="color:#7f1d1d">9.8%</span></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label" style="width:60px">Axis</span>
+            <div class="bar-track"><div class="bar-fill" style="width:80%;background:#fb923c"><span class="bar-val" style="color:#7c2d12">8.7%</span></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label" style="width:60px">HDFC</span>
+            <div class="bar-track"><div class="bar-fill" style="width:72%;background:#fbbf24"><span class="bar-val" style="color:#78350f">7.9%</span></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label" style="width:60px">Kotak</span>
+            <div class="bar-track"><div class="bar-fill" style="width:65%;background:#60a5fa"><span class="bar-val" style="color:#1e3a5f">7.1%</span></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label" style="width:60px">SBI</span>
+            <div class="bar-track"><div class="bar-fill" style="width:58%;background:#34d399"><span class="bar-val" style="color:#064e3b">6.4%</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="ti ti-device-mobile" style="font-size:13px;margin-right:4px" aria-hidden="true"></i>UPI app breakdown</div>
+        <div class="bar-wrap">
+          <div class="bar-row">
+            <span class="bar-label" style="width:72px">BHIM</span>
+            <div class="bar-track"><div class="bar-fill" style="width:88%;background:#a78bfa"><span class="bar-val" style="color:#3b0764">8.2%</span></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label" style="width:72px">Amazon Pay</span>
+            <div class="bar-track"><div class="bar-fill" style="width:83%;background:#60a5fa"><span class="bar-val" style="color:#1e3a5f">7.9%</span></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label" style="width:72px">PhonePe</span>
+            <div class="bar-track"><div class="bar-fill" style="width:79%;background:#34d399"><span class="bar-val" style="color:#064e3b">7.8%</span></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label" style="width:72px">Paytm</span>
+            <div class="bar-track"><div class="bar-fill" style="width:75%;background:#fbbf24"><span class="bar-val" style="color:#78350f">7.7%</span></div></div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label" style="width:72px">Google Pay</span>
+            <div class="bar-track"><div class="bar-fill" style="width:67%;background:#f87171"><span class="bar-val" style="color:#7f1d1d">7.4%</span></div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-list-details" style="font-size:13px;margin-right:4px" aria-hidden="true"></i>Recent high-risk transactions</div>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Transaction ID</th>
+            <th>Date</th>
+            <th>Sender bank</th>
+            <th>Amount</th>
+            <th>UPI app</th>
+            <th>Fraud type</th>
+            <th>Risk score</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-family:var(--font-mono);font-size:10px;color:#60a5fa">TXN0023841</td>
+            <td>15 Oct 2024</td><td>Yes Bank</td>
+            <td style="color:#f87171">₹4,82,000</td><td>PhonePe</td>
+            <td>SIM swap</td>
+            <td><span class="badge badge-red">96.4</span></td>
+            <td><span class="badge badge-red">FRAUD</span></td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-mono);font-size:10px;color:#60a5fa">TXN0018732</td>
+            <td>03 Sep 2024</td><td>Axis Bank</td>
+            <td style="color:#f87171">₹3,91,500</td><td>BHIM</td>
+            <td>Fake UPI link</td>
+            <td><span class="badge badge-red">94.1</span></td>
+            <td><span class="badge badge-red">FRAUD</span></td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-mono);font-size:10px;color:#60a5fa">TXN0041293</td>
+            <td>22 Nov 2024</td><td>HDFC</td>
+            <td style="color:#fbbf24">₹87,300</td><td>Google Pay</td>
+            <td>OTP fraud</td>
+            <td><span class="badge badge-amber">78.2</span></td>
+            <td><span class="badge badge-red">FRAUD</span></td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-mono);font-size:10px;color:#60a5fa">TXN0009471</td>
+            <td>11 Jul 2024</td><td>SBI</td>
+            <td style="color:#34d399">₹12,400</td><td>Paytm</td>
+            <td>None</td>
+            <td><span class="badge badge-green">18.7</span></td>
+            <td><span class="badge badge-green">LEGIT</span></td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-mono);font-size:10px;color:#60a5fa">TXN0033621</td>
+            <td>08 Dec 2024</td><td>Kotak</td>
+            <td style="color:#fbbf24">₹1,24,000</td><td>Amazon Pay</td>
+            <td>Acct takeover</td>
+            <td><span class="badge badge-red">91.8</span></td>
+            <td><span class="badge badge-red">FRAUD</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
