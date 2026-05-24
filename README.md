@@ -41,7 +41,6 @@ upi-fraud-analysis/
 │   └── fraud_type_breakdown.csv
 │
 ├── scripts/
-│   ├── generate_demo_data.py
 │   └── data_processing.py
 │
 ├── powerbi/
