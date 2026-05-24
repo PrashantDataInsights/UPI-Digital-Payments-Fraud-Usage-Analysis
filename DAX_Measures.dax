@@ -1,0 +1,605 @@
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║          UPI FRAUD ANALYSIS — POWER BI DAX MEASURES                    ║
+# ║          Complete DAX Code for Power BI Desktop                        ║
+# ║          Copy each measure into: Modeling → New Measure                ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# TABLE: cleaned_transactions  (primary fact table)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# ─── SECTION 1: CORE KPI MEASURES ─────────────────────────────────────────
+
+## 1.1 Total Transactions
+Total Transactions =
+COUNTROWS(cleaned_transactions)
+
+## 1.2 Total Fraud Cases
+Total Fraud Cases =
+CALCULATE(
+    COUNTROWS(cleaned_transactions),
+    cleaned_transactions[Is_Fraud] = 1
+)
+
+## 1.3 Total Legitimate Cases
+Total Legitimate Cases =
+CALCULATE(
+    COUNTROWS(cleaned_transactions),
+    cleaned_transactions[Is_Fraud] = 0
+)
+
+## 1.4 Fraud Rate %
+Fraud Rate % =
+DIVIDE(
+    [Total Fraud Cases],
+    [Total Transactions],
+    0
+) * 100
+
+## 1.5 Total Transaction Amount
+Total Amount (INR) =
+SUM(cleaned_transactions[Amount_INR])
+
+## 1.6 Total Fraud Amount
+Fraud Amount (INR) =
+CALCULATE(
+    SUM(cleaned_transactions[Amount_INR]),
+    cleaned_transactions[Is_Fraud] = 1
+)
+
+## 1.7 Total Legitimate Amount
+Legitimate Amount (INR) =
+CALCULATE(
+    SUM(cleaned_transactions[Amount_INR]),
+    cleaned_transactions[Is_Fraud] = 0
+)
+
+## 1.8 Fraud Amount %
+Fraud Amount % =
+DIVIDE(
+    [Fraud Amount (INR)],
+    [Total Amount (INR)],
+    0
+) * 100
+
+## 1.9 Average Transaction Amount
+Avg Transaction Amount =
+AVERAGE(cleaned_transactions[Amount_INR])
+
+## 1.10 Average Fraud Amount
+Avg Fraud Amount =
+CALCULATE(
+    AVERAGE(cleaned_transactions[Amount_INR]),
+    cleaned_transactions[Is_Fraud] = 1
+)
+
+## 1.11 Average Legitimate Amount
+Avg Legit Amount =
+CALCULATE(
+    AVERAGE(cleaned_transactions[Amount_INR]),
+    cleaned_transactions[Is_Fraud] = 0
+)
+
+## 1.12 Average Risk Score
+Avg Risk Score =
+AVERAGE(cleaned_transactions[Risk_Score])
+
+## 1.13 Avg Fraud Risk Score
+Avg Fraud Risk Score =
+CALCULATE(
+    AVERAGE(cleaned_transactions[Risk_Score]),
+    cleaned_transactions[Is_Fraud] = 1
+)
+
+
+# ─── SECTION 2: TREND & TIME INTELLIGENCE MEASURES ────────────────────────
+
+## 2.1 MoM Fraud Change %
+MoM Fraud Change % =
+VAR CurrentFraud = [Total Fraud Cases]
+VAR PrevFraud =
+    CALCULATE(
+        [Total Fraud Cases],
+        DATEADD(cleaned_transactions[Date], -1, MONTH)
+    )
+RETURN
+    DIVIDE(CurrentFraud - PrevFraud, PrevFraud, 0) * 100
+
+## 2.2 MoM Transaction Change %
+MoM Transaction Change % =
+VAR CurrentTxns = [Total Transactions]
+VAR PrevTxns =
+    CALCULATE(
+        [Total Transactions],
+        DATEADD(cleaned_transactions[Date], -1, MONTH)
+    )
+RETURN
+    DIVIDE(CurrentTxns - PrevTxns, PrevTxns, 0) * 100
+
+## 2.3 YTD Total Transactions
+YTD Total Transactions =
+TOTALYTD(
+    [Total Transactions],
+    cleaned_transactions[Date]
+)
+
+## 2.4 YTD Fraud Cases
+YTD Fraud Cases =
+TOTALYTD(
+    [Total Fraud Cases],
+    cleaned_transactions[Date]
+)
+
+## 2.5 YTD Fraud Amount
+YTD Fraud Amount =
+TOTALYTD(
+    [Fraud Amount (INR)],
+    cleaned_transactions[Date]
+)
+
+## 2.6 Rolling 30-Day Fraud Cases
+Rolling 30D Fraud Cases =
+CALCULATE(
+    [Total Fraud Cases],
+    DATESINPERIOD(
+        cleaned_transactions[Date],
+        LASTDATE(cleaned_transactions[Date]),
+        -30,
+        DAY
+    )
+)
+
+## 2.7 Rolling 30-Day Fraud Rate
+Rolling 30D Fraud Rate % =
+DIVIDE(
+    CALCULATE(
+        [Total Fraud Cases],
+        DATESINPERIOD(cleaned_transactions[Date], LASTDATE(cleaned_transactions[Date]), -30, DAY)
+    ),
+    CALCULATE(
+        [Total Transactions],
+        DATESINPERIOD(cleaned_transactions[Date], LASTDATE(cleaned_transactions[Date]), -30, DAY)
+    ),
+    0
+) * 100
+
+## 2.8 Cumulative Fraud Cases (Running Total)
+Cumulative Fraud Cases =
+CALCULATE(
+    [Total Fraud Cases],
+    FILTER(
+        ALL(cleaned_transactions[Date]),
+        cleaned_transactions[Date] <= MAX(cleaned_transactions[Date])
+    )
+)
+
+## 2.9 Cumulative Amount
+Cumulative Amount =
+CALCULATE(
+    [Total Amount (INR)],
+    FILTER(
+        ALL(cleaned_transactions[Date]),
+        cleaned_transactions[Date] <= MAX(cleaned_transactions[Date])
+    )
+)
+
+## 2.10 QoQ Fraud Change %
+QoQ Fraud Change % =
+VAR CurrentQ = [Total Fraud Cases]
+VAR PrevQ =
+    CALCULATE(
+        [Total Fraud Cases],
+        DATEADD(cleaned_transactions[Date], -1, QUARTER)
+    )
+RETURN
+    DIVIDE(CurrentQ - PrevQ, PrevQ, 0) * 100
+
+
+# ─── SECTION 3: BANK ANALYSIS MEASURES ────────────────────────────────────
+
+## 3.1 Fraud Rate by Bank
+Fraud Rate by Bank % =
+DIVIDE(
+    CALCULATE(
+        COUNTROWS(cleaned_transactions),
+        cleaned_transactions[Is_Fraud] = 1
+    ),
+    COUNTROWS(cleaned_transactions),
+    0
+) * 100
+
+## 3.2 Highest Risk Bank (Dynamic Label)
+Highest Risk Bank =
+CALCULATE(
+    SELECTEDVALUE(cleaned_transactions[Sender_Bank]),
+    TOPN(
+        1,
+        SUMMARIZE(
+            cleaned_transactions,
+            cleaned_transactions[Sender_Bank],
+            "FR", DIVIDE(
+                CALCULATE(COUNTROWS(cleaned_transactions), cleaned_transactions[Is_Fraud]=1),
+                COUNTROWS(cleaned_transactions), 0
+            )
+        ),
+        [FR], DESC
+    )
+)
+
+## 3.3 Bank Fraud Count Rank
+Bank Fraud Rank =
+RANKX(
+    ALL(cleaned_transactions[Sender_Bank]),
+    [Total Fraud Cases],
+    ,
+    DESC,
+    DENSE
+)
+
+## 3.4 Bank Share of Total Fraud %
+Bank Fraud Share % =
+DIVIDE(
+    [Total Fraud Cases],
+    CALCULATE([Total Fraud Cases], ALL(cleaned_transactions[Sender_Bank])),
+    0
+) * 100
+
+
+# ─── SECTION 4: STATE ANALYSIS MEASURES ───────────────────────────────────
+
+## 4.1 State Fraud Rate %
+State Fraud Rate % =
+DIVIDE(
+    CALCULATE(COUNTROWS(cleaned_transactions), cleaned_transactions[Is_Fraud] = 1),
+    COUNTROWS(cleaned_transactions),
+    0
+) * 100
+
+## 4.2 Cross-State Fraud Count
+Cross State Fraud Count =
+CALCULATE(
+    COUNTROWS(cleaned_transactions),
+    cleaned_transactions[Is_Fraud] = 1,
+    cleaned_transactions[Cross_State_Txn] = 1
+)
+
+## 4.3 Cross-State Fraud Rate %
+Cross State Fraud Rate % =
+DIVIDE(
+    [Cross State Fraud Count],
+    CALCULATE(COUNTROWS(cleaned_transactions), cleaned_transactions[Cross_State_Txn] = 1),
+    0
+) * 100
+
+## 4.4 State Fraud Rank
+State Fraud Rank =
+RANKX(
+    ALL(cleaned_transactions[Sender_State]),
+    [Total Fraud Cases],
+    ,
+    DESC,
+    DENSE
+)
+
+
+# ─── SECTION 5: UPI APP & DEVICE ANALYSIS ─────────────────────────────────
+
+## 5.1 App Fraud Rate %
+App Fraud Rate % =
+DIVIDE(
+    CALCULATE(COUNTROWS(cleaned_transactions), cleaned_transactions[Is_Fraud] = 1),
+    COUNTROWS(cleaned_transactions),
+    0
+) * 100
+
+## 5.2 App Share of Fraud %
+App Fraud Share % =
+DIVIDE(
+    [Total Fraud Cases],
+    CALCULATE([Total Fraud Cases], ALL(cleaned_transactions[UPI_App])),
+    0
+) * 100
+
+## 5.3 Device Fraud Rate %
+Device Fraud Rate % =
+DIVIDE(
+    CALCULATE(COUNTROWS(cleaned_transactions), cleaned_transactions[Is_Fraud] = 1),
+    COUNTROWS(cleaned_transactions),
+    0
+) * 100
+
+## 5.4 New Device Fraud Count
+New Device Fraud Count =
+CALCULATE(
+    COUNTROWS(cleaned_transactions),
+    cleaned_transactions[Is_Fraud] = 1,
+    cleaned_transactions[New_Device_Used] = 1
+)
+
+## 5.5 New Device Fraud %
+New Device Fraud % =
+DIVIDE(
+    [New Device Fraud Count],
+    [Total Fraud Cases],
+    0
+) * 100
+
+
+# ─── SECTION 6: RISK SCORING MEASURES ─────────────────────────────────────
+
+## 6.1 High Risk Transactions
+High Risk Transactions =
+CALCULATE(
+    COUNTROWS(cleaned_transactions),
+    cleaned_transactions[Risk_Score] >= 75
+)
+
+## 6.2 Critical Risk Transactions
+Critical Risk Transactions =
+CALCULATE(
+    COUNTROWS(cleaned_transactions),
+    cleaned_transactions[Risk_Score] >= 90
+)
+
+## 6.3 High Risk Fraud Confirmation Rate
+High Risk Confirmed Fraud % =
+DIVIDE(
+    CALCULATE(
+        COUNTROWS(cleaned_transactions),
+        cleaned_transactions[Risk_Score] >= 75,
+        cleaned_transactions[Is_Fraud] = 1
+    ),
+    CALCULATE(
+        COUNTROWS(cleaned_transactions),
+        cleaned_transactions[Risk_Score] >= 75
+    ),
+    0
+) * 100
+
+## 6.4 Risk Score Distribution Label (for card)
+Risk Level Summary =
+VAR HighRisk  = [High Risk Transactions]
+VAR CritRisk  = [Critical Risk Transactions]
+RETURN
+    "High Risk: " & HighRisk & " | Critical: " & CritRisk
+
+
+# ─── SECTION 7: BEHAVIOURAL PATTERN MEASURES ──────────────────────────────
+
+## 7.1 Night Time Fraud Count
+Night Fraud Count =
+CALCULATE(
+    COUNTROWS(cleaned_transactions),
+    cleaned_transactions[Is_Fraud] = 1,
+    cleaned_transactions[Is_Night_Txn] = 1
+)
+
+## 7.2 Night Fraud Rate %
+Night Fraud Rate % =
+DIVIDE(
+    [Night Fraud Count],
+    CALCULATE(COUNTROWS(cleaned_transactions), cleaned_transactions[Is_Night_Txn] = 1),
+    0
+) * 100
+
+## 7.3 Weekend Fraud Count
+Weekend Fraud Count =
+CALCULATE(
+    COUNTROWS(cleaned_transactions),
+    cleaned_transactions[Is_Fraud] = 1,
+    cleaned_transactions[Is_Weekend] = 1
+)
+
+## 7.4 Multiple Login Attempt Fraud
+Multi Login Fraud Count =
+CALCULATE(
+    COUNTROWS(cleaned_transactions),
+    cleaned_transactions[Is_Fraud] = 1,
+    cleaned_transactions[Login_Attempts] >= 3
+)
+
+## 7.5 Avg Response Time (Fraud vs Legit)
+Avg Response Time Fraud =
+CALCULATE(
+    AVERAGE(cleaned_transactions[Response_Time_Sec]),
+    cleaned_transactions[Is_Fraud] = 1
+)
+
+Avg Response Time Legit =
+CALCULATE(
+    AVERAGE(cleaned_transactions[Response_Time_Sec]),
+    cleaned_transactions[Is_Fraud] = 0
+)
+
+
+# ─── SECTION 8: DYNAMIC CARD & SUMMARY MEASURES ───────────────────────────
+
+## 8.1 Fraud Rate Card Text
+Fraud Rate Card =
+FORMAT([Fraud Rate %], "0.00") & "%"
+
+## 8.2 Total Amount Card (Crores)
+Total Amount Crores =
+DIVIDE([Total Amount (INR)], 10000000)
+
+## 8.3 Fraud Amount Card (Lakhs)
+Fraud Amount Lakhs =
+DIVIDE([Fraud Amount (INR)], 100000)
+
+## 8.4 Detection Efficiency %
+Detection Efficiency % =
+DIVIDE(
+    CALCULATE(
+        COUNTROWS(cleaned_transactions),
+        cleaned_transactions[Is_Fraud] = 1,
+        cleaned_transactions[Risk_Score] >= 70
+    ),
+    [Total Fraud Cases],
+    0
+) * 100
+
+## 8.5 False Positive Rate
+False Positive Rate % =
+DIVIDE(
+    CALCULATE(
+        COUNTROWS(cleaned_transactions),
+        cleaned_transactions[Is_Fraud] = 0,
+        cleaned_transactions[Risk_Score] >= 70
+    ),
+    CALCULATE(
+        COUNTROWS(cleaned_transactions),
+        cleaned_transactions[Is_Fraud] = 0
+    ),
+    0
+) * 100
+
+## 8.6 Fraud Velocity Score (Top UPI)
+Avg Fraud Velocity =
+AVERAGE(cleaned_transactions[Fraud_Velocity])
+
+## 8.7 Transactions Per Day
+Transactions Per Day =
+DIVIDE(
+    [Total Transactions],
+    DATEDIFF(
+        MIN(cleaned_transactions[Date]),
+        MAX(cleaned_transactions[Date]),
+        DAY
+    ) + 1,
+    0
+)
+
+## 8.8 Fraud Cases Per Day
+Fraud Cases Per Day =
+DIVIDE(
+    [Total Fraud Cases],
+    DATEDIFF(
+        MIN(cleaned_transactions[Date]),
+        MAX(cleaned_transactions[Date]),
+        DAY
+    ) + 1,
+    0
+)
+
+
+# ─── SECTION 9: CALCULATED COLUMNS (add in Data View → New Column) ────────
+
+## 9.1 Amount in Lakhs
+Amount_Lakhs =
+cleaned_transactions[Amount_INR] / 100000
+
+## 9.2 Is High Value
+Is_High_Value =
+IF(cleaned_transactions[Amount_INR] >= 50000, "High Value", "Normal")
+
+## 9.3 Fraud Risk Band
+Fraud_Risk_Band =
+SWITCH(
+    TRUE(),
+    cleaned_transactions[Risk_Score] >= 90, "CRITICAL 🔴",
+    cleaned_transactions[Risk_Score] >= 75, "HIGH 🟠",
+    cleaned_transactions[Risk_Score] >= 50, "MEDIUM 🟡",
+    "LOW 🟢"
+)
+
+## 9.4 Hour Category
+Hour_Category =
+SWITCH(
+    TRUE(),
+    cleaned_transactions[Hour] >= 0  && cleaned_transactions[Hour] <= 5,  "Night (00-05)",
+    cleaned_transactions[Hour] >= 6  && cleaned_transactions[Hour] <= 11, "Morning (06-11)",
+    cleaned_transactions[Hour] >= 12 && cleaned_transactions[Hour] <= 17, "Afternoon (12-17)",
+    cleaned_transactions[Hour] >= 18 && cleaned_transactions[Hour] <= 21, "Evening (18-21)",
+    "Late Night (22-23)"
+)
+
+## 9.5 Transaction Size Label
+Txn_Size_Label =
+SWITCH(
+    TRUE(),
+    cleaned_transactions[Amount_INR] < 500,    "Micro",
+    cleaned_transactions[Amount_INR] < 2000,   "Small",
+    cleaned_transactions[Amount_INR] < 10000,  "Medium",
+    cleaned_transactions[Amount_INR] < 50000,  "Large",
+    cleaned_transactions[Amount_INR] < 200000, "High",
+    "Very High"
+)
+
+
+# ─── SECTION 10: DATE TABLE (Paste in Power Query M or DAX) ───────────────
+
+## Add a Date Dimension Table in Power BI using this DAX:
+## Home → New Table → paste below:
+
+Date_Table =
+ADDCOLUMNS(
+    CALENDAR(DATE(2024,1,1), DATE(2024,12,31)),
+    "Year",        YEAR([Date]),
+    "Month_Num",   MONTH([Date]),
+    "Month_Name",  FORMAT([Date], "MMMM"),
+    "Month_Short", FORMAT([Date], "MMM"),
+    "Quarter",     "Q" & QUARTER([Date]),
+    "Week_Num",    WEEKNUM([Date]),
+    "Day_Name",    FORMAT([Date], "DDDD"),
+    "Day_Short",   FORMAT([Date], "DDD"),
+    "Is_Weekend",  IF(WEEKDAY([Date],2) >= 6, 1, 0),
+    "Day_of_Month",DAY([Date]),
+    "Year_Month",  FORMAT([Date], "YYYY-MMM")
+)
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# POWER BI SETUP INSTRUCTIONS
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#
+# STEP 1 – Import Data
+#   Home → Get Data → Text/CSV → Select these files from /data/ folder:
+#     • cleaned_transactions.csv  (main fact table)
+#     • monthly_trends.csv
+#     • bank_analysis.csv
+#     • state_analysis.csv
+#     • hourly_patterns.csv
+#     • upi_app_analysis.csv
+#     • fraud_type_breakdown.csv
+#
+# STEP 2 – Create Date Table
+#   Modeling → New Table → paste the Date_Table DAX above
+#   Then: Mark as Date Table (Date column)
+#
+# STEP 3 – Create Relationships
+#   cleaned_transactions[Date]  → Date_Table[Date]  (Many-to-One)
+#
+# STEP 4 – Add Measures
+#   Select cleaned_transactions table
+#   Modeling → New Measure → paste each DAX measure above
+#   Group measures in a Display Folder called "_Measures"
+#
+# STEP 5 – Add Calculated Columns
+#   Select cleaned_transactions table
+#   Modeling → New Column → paste each calculated column DAX
+#
+# STEP 6 – Recommended Visuals
+#   Page 1 – Executive Summary
+#     • Card: Total Transactions, Fraud Rate %, Fraud Amount Lakhs
+#     • Donut Chart: Fraud vs Legit split
+#     • Line Chart: Monthly fraud trend (Date_Table[Month_Name] vs Fraud Cases)
+#     • Bar Chart: Top 5 Banks by Fraud Rate
+#
+#   Page 2 – Fraud Deep Dive
+#     • Stacked Bar: Fraud Type vs Count
+#     • Matrix: State × Month fraud count
+#     • Scatter: Amount vs Risk Score (coloured by Fraud Flag)
+#     • Slicer: Quarter, UPI App, Device Type
+#
+#   Page 3 – Behavioural Patterns
+#     • Heat Map (Matrix): Hour_Category × Day_Name → Fraud Count
+#     • Bar: Night vs Day fraud comparison
+#     • Funnel: Login Attempts distribution for fraud
+#     • Line: Rolling 30D Fraud Rate %
+#
+#   Page 4 – Risk Dashboard
+#     • Gauge: Detection Efficiency %
+#     • Bar: Risk Band distribution
+#     • Table: Top 20 high-risk transactions
+#     • KPI Card: False Positive Rate %
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
