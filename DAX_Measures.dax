@@ -1,150 +1,119 @@
-# 🔍 Additional Business Insights
 
-## 🏦 Bank-Wise Fraud Insights
+Total Transactions =
+COUNTROWS(cleaned_transactions)
 
-The analysis shows that some banks are experiencing a higher number of fraudulent transactions compared to others. Banks with high transaction volume are naturally more exposed to fraud activities.
+Total Fraud Cases =
+CALCULATE(
+    COUNTROWS(cleaned_transactions),
+    cleaned_transactions[Is_Fraud] = 1
+)
 
-### Key Observations
+Fraud Rate % =
+DIVIDE(
+    [Total Fraud Cases],
+    [Total Transactions],
+    0
+) * 100
 
-- Private sector banks show relatively higher fraud cases in the dataset
-- Some banks have lower transaction volume but a higher fraud rate percentage
-- High-value fraud transactions are more common in digitally active banks
+Total Transaction Amount =
+SUM(cleaned_transactions[Amount_INR])
 
-### Business Recommendation
+Fraud Amount =
+CALCULATE(
+    SUM(cleaned_transactions[Amount_INR]),
+    cleaned_transactions[Is_Fraud] = 1
+)
 
-- Strengthen real-time fraud monitoring systems
-- Apply additional verification for high-risk transactions
-- Monitor unusual login activity and device changes
+Average Fraud Amount =
+CALCULATE(
+    AVERAGE(cleaned_transactions[Amount_INR]),
+    cleaned_transactions[Is_Fraud] = 1
+)
 
----
+-- =========================================
+-- BANK ANALYSIS
+-- =========================================
 
-# 🌍 Region and State-Wise Fraud Insights
+Bank Fraud Rate % =
+DIVIDE(
+    CALCULATE(
+        COUNTROWS(cleaned_transactions),
+        cleaned_transactions[Is_Fraud] = 1
+    ),
+    COUNTROWS(cleaned_transactions),
+    0
+) * 100
 
-Fraud activity is more concentrated in metro cities and states with higher digital payment usage.
+Top Fraud Bank Rank =
+RANKX(
+    ALL(cleaned_transactions[Sender_Bank]),
+    [Total Fraud Cases],
+    ,
+    DESC
+)
 
-### Key Observations
+-- =========================================
+-- STATE ANALYSIS
+-- =========================================
 
-- Cross-state transactions show higher fraud probability
-- Metro regions report more suspicious transaction patterns
-- States with higher UPI adoption also show increased fraud activity
+State Fraud Rate % =
+DIVIDE(
+    CALCULATE(
+        COUNTROWS(cleaned_transactions),
+        cleaned_transactions[Is_Fraud] = 1
+    ),
+    COUNTROWS(cleaned_transactions),
+    0
+) * 100
 
-### Business Recommendation
+Cross State Fraud Count =
+CALCULATE(
+    COUNTROWS(cleaned_transactions),
+    cleaned_transactions[Is_Fraud] = 1,
+    cleaned_transactions[Cross_State_Txn] = 1
+)
 
-- Implement geo-location based fraud checks
-- Monitor unusual transaction behaviour across regions
-- Use state-level fraud heatmaps in Power BI dashboards
+-- =========================================
+-- TIME ANALYSIS
+-- =========================================
 
----
+Night Fraud Count =
+CALCULATE(
+    COUNTROWS(cleaned_transactions),
+    cleaned_transactions[Is_Fraud] = 1,
+    cleaned_transactions[Is_Night_Txn] = 1
+)
 
-# 🕒 Time-Based Fraud Analysis
+Weekend Fraud Count =
+CALCULATE(
+    COUNTROWS(cleaned_transactions),
+    cleaned_transactions[Is_Fraud] = 1,
+    cleaned_transactions[Is_Weekend] = 1
+)
 
-Fraud transactions are more common during late evening and night hours.
+-- =========================================
+-- RISK ANALYSIS
+-- =========================================
 
-### Key Observations
+High Risk Transactions =
+CALCULATE(
+    COUNTROWS(cleaned_transactions),
+    cleaned_transactions[Risk_Score] >= 75
+)
 
-- Peak fraud activity is observed between 9 PM and 1 AM
-- Weekend transactions show slightly higher fraud rates
-- Night-time transactions carry higher fraud risk compared to daytime transactions
+Average Risk Score =
+AVERAGE(cleaned_transactions[Risk_Score])
 
-### Business Recommendation
+-- =========================================
+-- APP ANALYSIS
+-- =========================================
 
-- Apply stricter fraud rules during high-risk hours
-- Trigger additional OTP verification for late-night transactions
-- Monitor high-value transactions during weekends
-
----
-
-# 📱 UPI App-Wise Insights
-
-The project also analyzes fraud trends across different UPI applications.
-
-### Key Observations
-
-- Some UPI apps show slightly higher fraud incidence in the demo dataset
-- Apps with higher user activity naturally attract more fraud attempts
-- Device-switch fraud patterns are commonly observed
-
-### Business Recommendation
-
-- Implement device fingerprinting
-- Detect unusual device login behaviour
-- Monitor transactions from newly registered devices
-
----
-
-# 📲 Device and User Behaviour Analysis
-
-Fraudulent transactions are strongly linked with suspicious user behaviour patterns.
-
-### Key Observations
-
-| Behaviour Pattern | Risk Level |
-|---|---|
-| New Device Usage | High |
-| Multiple Login Attempts | High |
-| Large Transactions at Night | Critical |
-| Cross-State Transactions | Medium to High |
-
-### Business Recommendation
-
-- Introduce behavioural risk scoring
-- Track login attempt frequency
-- Flag suspicious high-value transactions automatically
-
----
-
-# 💰 Transaction Amount Analysis
-
-Fraud transactions generally involve larger transaction amounts compared to legitimate transactions.
-
-### Key Observations
-
-- Average fraud amount is significantly higher than normal transactions
-- High-value transfers have increased fraud probability
-- Fraudsters target larger amounts for maximum financial gain
-
-### Business Recommendation
-
-- Apply dynamic transaction limits
-- Use risk-based approval workflows
-- Enable real-time alerts for unusually large transactions
-
----
-
-# 📊 Recommended Dashboard Enhancements
-
-The following visuals can further improve the Power BI dashboard:
-
-- Bank-wise fraud comparison
-- State-wise fraud heatmap
-- Hourly fraud trend analysis
-- Fraud type distribution
-- Device fraud comparison
-- Risk score segmentation
-- Cross-state transaction analysis
-- Top high-risk UPI IDs
-
----
-
-# 🚀 Future Scope
-
-This project can be extended further using:
-
-- Machine Learning based fraud prediction
-- Real-time fraud detection APIs
-- PySpark for large-scale processing
-- Cloud deployment using AWS or Azure
-- Streamlit-based fraud monitoring application
-- Kafka streaming pipelines
-
----
-
-# 📌 Business Impact
-
-This solution helps organizations:
-
-- Detect suspicious UPI transactions
-- Identify high-risk users and regions
-- Reduce fraud-related financial losses
-- Improve fraud monitoring efficiency
-- Support risk management and compliance teams
+UPI App Fraud Rate % =
+DIVIDE(
+    CALCULATE(
+        COUNTROWS(cleaned_transactions),
+        cleaned_transactions[Is_Fraud] = 1
+    ),
+    COUNTROWS(cleaned_transactions),
+    0
+) * 100
